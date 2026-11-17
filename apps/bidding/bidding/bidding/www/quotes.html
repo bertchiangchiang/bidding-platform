@@ -1,0 +1,64 @@
+{% extends "templates/web.html" %}
+
+{% block title %}招标大厅{% endblock %}
+
+{% block page_content %}
+<div class="container py-5">
+  {% if is_guest %}
+  <div class="alert alert-warning">请先登录后查看招标与提交报价
+    <a href="/login?redirect-to=/quotes" class="btn btn-primary btn-sm ml-2">登录</a>
+  </div>
+  {% endif %}
+  <h2 class="mb-1">招标大厅</h2>
+  <p class="text-muted mb-4">
+    {% if is_supplier %}您好，供应商账号：可在线报价、查看排名（排名不含他人价格）。
+    {% elif is_admin %}管理员视角：可见全部报价与价格。{% endif %}
+  </p>
+
+  {% for t in tenders %}
+  <div class="card mb-3 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">{{ t.title }}
+        <span class="badge bg-secondary">{{ t.status }}</span></h5>
+      <p class="card-text">{{ t.description or '' }}</p>
+      <p class="text-muted mb-2">报价截止：{{ t.deadline_str }}</p>
+      {% if is_supplier %}
+      <button class="btn btn-primary btn-sm"
+              onclick="openQuoteForm('{{ t.name }}')">我要报价</button>
+      {% endif %}
+      <button class="btn btn-outline-secondary btn-sm"
+              onclick="loadRanking('{{ t.name }}')">查看排名</button>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="card mb-3 shadow-sm" id="quote-form" style="display:none">
+    <div class="card-body">
+      <h5>提交报价 <span class="text-muted" id="qf-tender"></span></h5>
+      <input id="qf-supplier" class="form-control mb-2" placeholder="供应商名称">
+      <table class="table" id="qf-items">
+        <thead><tr><th>品名</th><th>数量</th><th>单价</th><th>备注</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><input class="form-control i-name"></td>
+            <td><input class="form-control i-qty" type="number" value="1"></td>
+            <td><input class="form-control i-price" type="number" step="0.01"></td>
+            <td><input class="form-control i-remark"></td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn btn-outline-secondary btn-sm" onclick="addRow()">加一行</button>
+      <button class="btn btn-primary btn-sm" onclick="submitQuote()">提交报价</button>
+      <div id="qf-msg" class="mt-2 text-danger"></div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm" id="ranking" style="display:none">
+    <div class="card-body">
+      <h5>评标排名</h5>
+      <div id="ranking-body"></div>
+    </div>
+  </div>
+</div>
+<script>window.csrf_token = '{{ frappe.session.csrf_token }}';</script>
+{% endblock %}
