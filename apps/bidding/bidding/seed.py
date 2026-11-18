@@ -72,3 +72,31 @@ def setup_eval_demo():
     frappe.db.set_value("Tender", tender, "status", "已截止")
     frappe.db.commit()
     print("招标单状态:", frappe.db.get_value("Tender", tender, "status"))
+
+
+def setup_suppliers():
+    """给演示供应商账号补建已准入档案。"""
+    import frappe
+
+    for email, name in (
+        ("supplier1@demo.local", "宏达服饰"),
+        ("supplier2@demo.local", "锦华制衣"),
+    ):
+        if frappe.db.exists("Supplier", {"owner": email}):
+            print("已存在:", email)
+            continue
+        doc = frappe.get_doc({
+            "doctype": "Supplier",
+            "supplier_name": name,
+            "linked_user": email,
+            "status": "已准入",
+            "contact_person": name + "-联系人",
+            "phone": "1380000000" + name[-1],
+            "email": email,
+            "business_scope": "服装、服饰生产",
+            "review_note": "演示账号预准入",
+        })
+        doc.insert(ignore_permissions=True)
+        doc.db_set("owner", email)
+        print("建档:", doc.name, name)
+    frappe.db.commit()
