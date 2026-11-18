@@ -10,10 +10,27 @@
   </div>
   {% endif %}
   <h2 class="mb-1">招标大厅</h2>
-  <p class="text-muted mb-4">
+  <p class="text-muted mb-2">
     {% if is_supplier %}您好，供应商账号：可在线报价、查看排名（排名不含他人价格）。
-    {% elif is_admin %}管理员视角：可见全部报价与价格。{% endif %}
+    {% elif is_admin %}管理员视角：可见全部报价与价格。<a href="/manage" class="alert-link">→ 招标管理台</a>{% endif %}
   </p>
+  {% if is_supplier %}
+  <p class="mb-4">
+    {% if not supplier_status %}
+    <span class="badge bg-warning text-dark">未建档</span>
+    <span class="text-muted">报价前请先 <a href="/myprofile" class="alert-link">完善供应商资料</a> 并通过准入审核。</span>
+    {% elif supplier_status == '待审核' %}
+    <span class="badge bg-warning text-dark">准入审核中</span>
+    <span class="text-muted">审核通过前不能报价，<a href="/myprofile" class="alert-link">查看我的资料</a></span>
+    {% elif supplier_status == '已拒绝' %}
+    <span class="badge bg-danger">准入被拒绝</span>
+    <span class="text-muted">可 <a href="/myprofile" class="alert-link">修改资料</a> 重新申请</span>
+    {% else %}
+    <span class="badge bg-success">已准入</span>
+    <a href="/myprofile" class="text-muted small">我的资料</a>
+    {% endif %}
+  </p>
+  {% endif %}
 
   {% for t in tenders %}
   <div class="card mb-3 shadow-sm">
@@ -35,7 +52,7 @@
   <div class="card mb-3 shadow-sm" id="quote-form" style="display:none">
     <div class="card-body">
       <h5>提交报价 <span class="text-muted" id="qf-tender"></span></h5>
-      <input id="qf-supplier" class="form-control mb-2" placeholder="供应商名称">
+      <input id="qf-supplier" class="form-control mb-2" placeholder="供应商名称" value="{{ supplier_name or '' }}">
       <table class="table" id="qf-items">
         <thead><tr><th>品名</th><th>数量</th><th>单价</th><th>备注</th></tr></thead>
         <tbody>
