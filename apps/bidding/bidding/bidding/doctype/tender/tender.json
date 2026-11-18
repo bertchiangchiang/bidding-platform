@@ -10,6 +10,8 @@
   "status",
   "deadline",
   "description",
+  "evaluation_mode",
+  "score_template",
   "items_section",
   "items"
  ],
@@ -52,12 +54,26 @@
    "label": "招标明细",
    "options": "Tender Item",
    "reqd": 1
+  },
+  {
+   "default": "按总价",
+   "fieldname": "evaluation_mode",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "评标口径",
+   "options": "按总价\n按评分"
+  },
+  {
+   "fieldname": "score_template",
+   "fieldtype": "Link",
+   "label": "评分模板",
+   "options": "Score Template"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-17 19:00:00.000000",
+ "modified": "2026-11-18 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Bidding",
  "name": "Tender",
