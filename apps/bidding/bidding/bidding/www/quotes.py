@@ -22,6 +22,11 @@ def get_context(context):
         context.is_admin = "System Manager" in roles or "招标管理员" in roles
 
     if context.is_supplier:
+        from bidding.api import _my_supplier
+
+        prof = _my_supplier()
+        context.supplier_status = prof.status if prof else None
+        context.supplier_name = prof.supplier_name if prof else None
         context.my_quotes = frappe.get_all(
             "Supplier Quote",
             filters={"owner": frappe.session.user},
