@@ -1,0 +1,112 @@
+{% extends "templates/web.html" %}
+
+{% block title %}我的供应商资料{% endblock %}
+
+{% block page_content %}
+<div class="container py-5" style="max-width: 860px;">
+  {% if is_guest %}
+  <div class="alert alert-warning">请先登录后维护供应商资料
+    <a href="/login?redirect-to=/myprofile" class="btn btn-primary btn-sm ml-2">登录</a>
+  </div>
+  {% elif is_admin %}
+  <div class="alert alert-info">管理员请在 <a href="/manage" class="alert-link">招标管理台</a> 维护供应商档案。</div>
+  {% else %}
+
+  <h2 class="mb-1">我的供应商资料</h2>
+  <p class="mb-4">
+    {% if not profile %}
+    <span class="badge bg-warning text-dark">未建档</span>
+    <span class="text-muted">请填写以下资料提交准入申请，管理员审核通过后即可参与报价。</span>
+    {% elif status == '待审核' %}
+    <span class="badge bg-warning text-dark">待审核</span>
+    <span class="text-muted">资料已提交，等待管理员准入审核。审核通过前不能报价。</span>
+    {% elif status == '已准入' %}
+    <span class="badge bg-success">已准入</span>
+    <span class="text-muted">可以正常参与报价。<a href="/">去招标大厅 →</a></span>
+    {% else %}
+    <span class="badge bg-danger">已拒绝</span>
+    <span class="text-muted">{{ profile.review_note or '请联系管理员了解原因' }}。修改资料重新提交可再次申请。</span>
+    {% endif %}
+  </p>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group col-md-8">
+          <label>供应商名称 *</label>
+          <input id="pf-name" class="form-control"
+                 value="{{ profile.supplier_name or '' }}">
+        </div>
+        <div class="form-group col-md-4">
+          <label>统一社会信用代码</label>
+          <input id="pf-license" class="form-control"
+                 value="{{ profile.business_license_no or '' }}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label>联系人</label>
+          <input id="pf-contact" class="form-control"
+                 value="{{ profile.contact_person or '' }}">
+        </div>
+        <div class="form-group col-md-4">
+          <label>联系电话</label>
+          <input id="pf-phone" class="form-control" value="{{ profile.phone or '' }}">
+        </div>
+        <div class="form-group col-md-4">
+          <label>邮箱</label>
+          <input id="pf-email" class="form-control" value="{{ profile.email or '' }}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>地址</label>
+        <input id="pf-address" class="form-control" value="{{ profile.address or '' }}">
+      </div>
+      <div class="form-group">
+        <label>经营范围 / 主营产品</label>
+        <textarea id="pf-scope" class="form-control" rows="3">{{ profile.business_scope or '' }}</textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveProfile()">
+        {{ '提交准入申请' if not profile else '保存资料' }}
+      </button>
+      <div id="pf-msg" class="mt-2"></div>
+    </div>
+  </div>
+
+  <script>window.csrf_token = '{{ frappe.session.csrf_token }}';</script>
+  <script>
+  async function saveProfile() {
+    const data = {
+      supplier_name: document.getElementById('pf-name').value.trim(),
+      contact_person: document.getElementById('pf-contact').value.trim(),
+      phone: document.getElementById('pf-phone').value.trim(),
+      email: document.getElementById('pf-email').value.trim(),
+      address: document.getElementById('pf-address').value.trim(),
+      business_scope: document.getElementById('pf-scope').value.trim(),
+      business_license_no: document.getElementById('pf-license').value.trim()
+    };
+    if (!data.supplier_name) {
+      setMsg(false, '供应商名称必填'); return;
+    }
+    const resp = await fetch('/api/method/bidding.api.save_profile', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': window.csrf_token},
+      body: JSON.stringify({data: JSON.stringify(data)})
+    });
+    const r = await resp.json();
+    if (resp.ok) {
+      setMsg(true, '已保存，准入状态：' + (r.message.status || '待审核'));
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      setMsg(false, r.exception || r._server_messages || '保存失败');
+    }
+  }
+  function setMsg(ok, text) {
+    const el = document.getElementById('pf-msg');
+    el.className = 'mt-2 ' + (ok ? 'text-success' : 'text-danger');
+    el.textContent = text;
+  }
+  </script>
+  {% endif %}
+</div>
+{% endblock %}
