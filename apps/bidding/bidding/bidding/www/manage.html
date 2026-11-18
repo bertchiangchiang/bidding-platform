@@ -1,0 +1,227 @@
+{% extends "templates/web.html" %}
+
+{% block title %}招标管理台{% endblock %}
+
+{% block page_content %}
+<div class="container py-5">
+  {% if is_guest %}
+  <div class="alert alert-warning">请先登录
+    <a href="/login?redirect-to=/manage" class="btn btn-primary btn-sm ml-2">登录</a>
+  </div>
+  {% elif not is_admin %}
+  <div class="alert alert-danger">此页面仅限管理员访问。<a href="/" class="alert-link">返回招标大厅</a></div>
+  {% else %}
+
+  <h2 class="mb-1">招标管理台</h2>
+  <p class="text-muted mb-4">发标、截止、供应商准入审核。排名与定标请在大厅查看。</p>
+
+  <!-- 发标 -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-body">
+      <h5 class="d-flex justify-content-between align-items-center">
+        发布招标
+        <button class="btn btn-primary btn-sm" id="btn-show-form"
+                onclick="toggleForm()">＋ 新建招标</button>
+      </h5>
+      <div id="tender-form" style="display:none">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>招标标题 *</label>
+            <input id="tf-title" class="form-control" placeholder="如：2026 秋季工装采购">
+          </div>
+          <div class="form-group col-md-3">
+            <label>报价截止时间</label>
+            <input id="tf-deadline" class="form-control" type="datetime-local">
+          </div>
+          <div class="form-group col-md-3">
+            <label>评标口径</label>
+            <select id="tf-mode" class="form-control">
+              <option>按总价</option>
+              <option>按评分</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>评分模板（评标口径=按评分时选）</label>
+          <select id="tf-template" class="form-control">
+            <option value="">不使用</option>
+            {% for tp in templates %}
+            <option>{{ tp }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>招标说明</label>
+          <textarea id="tf-desc" class="form-control" rows="2"
+                    placeholder="交付要求、资质要求等"></textarea>
+        </div>
+        <label>招标明细 *</label>
+        <table class="table table-sm" id="tf-items">
+          <thead><tr><th>品名 *</th><th>规格</th><th>数量 *</th><th>单位</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><input class="form-control i-name"></td>
+              <td><input class="form-control i-spec"></td>
+              <td><input class="form-control i-qty" type="number" value="1"></td>
+              <td><input class="form-control i-unit" value="件"></td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="btn btn-outline-secondary btn-sm" onclick="addItemRow()">加一行</button>
+        <button class="btn btn-primary btn-sm" onclick="createTender()">发布招标</button>
+        <div id="tf-msg" class="mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 招标列表 -->
+  <div class="card mb-3 shadow-sm">
+    <div class="card-body">
+      <h5 class="mb-3">招标列表</h5>
+      <table class="table table-sm align-middle">
+        <thead><tr><th>单号</th><th>标题</th><th>状态</th><th>截止</th>
+          <th>报价数</th><th>评分数</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for t in tenders %}
+          <tr>
+            <td class="text-muted">{{ t.name }}</td>
+            <td>{{ t.title }}</td>
+            <td>
+              {% if t.status == '已定标' %}<span class="badge bg-success">{{ t.status }}</span>
+              {% elif t.status == '已截止' %}<span class="badge bg-warning text-dark">{{ t.status }}</span>
+              {% elif t.status == '进行中' %}<span class="badge bg-primary">{{ t.status }}</span>
+              {% else %}<span class="badge bg-secondary">{{ t.status }}</span>{% endif %}
+            </td>
+            <td class="text-muted small">{{ t.deadline or '不限' }}</td>
+            <td>{{ t.quote_count }}</td>
+            <td>{{ t.eval_count }}</td>
+            <td>
+              {% if t.status == '进行中' %}
+              <button class="btn btn-outline-warning btn-sm py-0 px-1"
+                      onclick="closeTender('{{ t.name }}')">截止</button>
+              {% endif %}
+              <a class="btn btn-outline-secondary btn-sm py-0 px-1" href="/">大厅</a>
+            </td>
+          </tr>
+        {% endfor %}
+        {% if not tenders %}<tr><td colspan="7" class="text-muted">暂无招标单</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 供应商准入 -->
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h5 class="mb-3">供应商库与准入审核</h5>
+      <table class="table table-sm align-middle">
+        <thead><tr><th>编码</th><th>名称</th><th>联系人</th><th>电话</th>
+          <th>经营范围</th><th>状态</th><th>审核备注</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for s in suppliers %}
+          <tr>
+            <td class="text-muted">{{ s.name }}</td>
+            <td>{{ s.supplier_name }}</td>
+            <td>{{ s.contact_person or '-' }}</td>
+            <td>{{ s.phone or '-' }}</td>
+            <td class="small text-muted">{{ (s.business_scope or '')[:30] }}</td>
+            <td>
+              {% if s.status == '已准入' %}<span class="badge bg-success">已准入</span>
+              {% elif s.status == '已拒绝' %}<span class="badge bg-danger">已拒绝</span>
+              {% else %}<span class="badge bg-warning text-dark">待审核</span>{% endif %}
+            </td>
+            <td class="small text-muted">{{ s.review_note or '' }}</td>
+            <td>
+              {% if s.status != '已准入' %}
+              <button class="btn btn-success btn-sm py-0 px-1"
+                      onclick="reviewSupplier('{{ s.name }}', '通过')">准入</button>
+              {% endif %}
+              {% if s.status != '已拒绝' %}
+              <button class="btn btn-outline-danger btn-sm py-0 px-1"
+                      onclick="reviewSupplier('{{ s.name }}', '拒绝')">拒绝</button>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        {% if not suppliers %}<tr><td colspan="8" class="text-muted">暂无供应商档案</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>window.csrf_token = '{{ frappe.session.csrf_token }}';</script>
+  <script>
+  function toggleForm() {
+    const f = document.getElementById('tender-form');
+    f.style.display = f.style.display === 'none' ? '' : 'none';
+  }
+  function addItemRow() {
+    document.querySelector('#tf-items tbody').insertAdjacentHTML('beforeend', `
+      <tr>
+        <td><input class="form-control i-name"></td>
+        <td><input class="form-control i-spec"></td>
+        <td><input class="form-control i-qty" type="number" value="1"></td>
+        <td><input class="form-control i-unit" value="件"></td>
+      </tr>`);
+  }
+  async function apiPost(method, payload) {
+    const resp = await fetch('/api/method/' + method, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': window.csrf_token},
+      body: JSON.stringify(payload)
+    });
+    return {ok: resp.ok, data: await resp.json()};
+  }
+  function setMsg(id, ok, text) {
+    const el = document.getElementById(id);
+    el.className = 'mt-2 ' + (ok ? 'text-success' : 'text-danger');
+    el.textContent = text;
+  }
+  async function createTender() {
+    const items = [];
+    document.querySelectorAll('#tf-items tbody tr').forEach(tr => {
+      const name = tr.querySelector('.i-name').value.trim();
+      if (!name) return;
+      items.push({
+        item_name: name,
+        spec: tr.querySelector('.i-spec').value.trim(),
+        qty: parseFloat(tr.querySelector('.i-qty').value || 0),
+        unit: tr.querySelector('.i-unit').value.trim()
+      });
+    });
+    const payload = {
+      title: document.getElementById('tf-title').value.trim(),
+      deadline: document.getElementById('tf-deadline').value || null,
+      description: document.getElementById('tf-desc').value.trim(),
+      evaluation_mode: document.getElementById('tf-mode').value,
+      score_template: document.getElementById('tf-template').value || null,
+      items: JSON.stringify(items)
+    };
+    if (!payload.title || !items.length) {
+      setMsg('tf-msg', false, '标题和至少一行明细必填'); return;
+    }
+    const {ok, data} = await apiPost('bidding.api.create_tender', payload);
+    if (ok) {
+      setMsg('tf-msg', true, '发布成功，单号：' + data.message.name + '，刷新页面查看');
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      setMsg('tf-msg', false, data.exception || data._server_messages || '发布失败');
+    }
+  }
+  async function closeTender(tender) {
+    if (!confirm('确认截止该招标？截止后供应商不能再报价。')) return;
+    const {ok, data} = await apiPost('bidding.api.close_tender', {tender: tender});
+    if (ok) location.reload();
+    else alert(data.exception || data._server_messages || '操作失败');
+  }
+  async function reviewSupplier(name, action) {
+    const note = action === '拒绝' ? (prompt('拒绝原因（可选）：') || '') : '';
+    const {ok, data} = await apiPost('bidding.api.review_supplier',
+      {supplier: name, action: action, note: note});
+    if (ok) location.reload();
+    else alert(data.exception || data._server_messages || '操作失败');
+  }
+  </script>
+  {% endif %}
+</div>
+{% endblock %}
