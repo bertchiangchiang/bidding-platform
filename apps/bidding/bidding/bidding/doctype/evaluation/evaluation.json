@@ -1,0 +1,91 @@
+{
+ "actions": [],
+ "creation": "2026-11-18 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tender",
+  "quote",
+  "evaluator",
+  "scores",
+  "total_score"
+ ],
+ "fields": [
+  {
+   "fieldname": "tender",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "招标单",
+   "options": "Tender",
+   "reqd": 1
+  },
+  {
+   "fieldname": "quote",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "报价单",
+   "options": "Supplier Quote",
+   "reqd": 1
+  },
+  {
+   "fieldname": "evaluator",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "评审人",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "scores",
+   "fieldtype": "Table",
+   "label": "评分明细",
+   "options": "Evaluation Score",
+   "reqd": 1
+  },
+  {
+   "fieldname": "total_score",
+   "fieldtype": "Percent",
+   "label": "加权总分",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 0,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-11-18 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Bidding",
+ "name": "Evaluation",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "招标管理员",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "autoname": "format:EVAL-{YYYY}{MM}-{#####}"
+}
