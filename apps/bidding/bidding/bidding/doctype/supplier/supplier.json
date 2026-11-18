@@ -1,0 +1,129 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:SUP-{#####}",
+ "creation": "2026-11-18 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "supplier_name",
+  "linked_user",
+  "status",
+  "review_note",
+  "contact_section",
+  "contact_person",
+  "phone",
+  "email",
+  "address",
+  "qualification_section",
+  "business_scope",
+  "business_license_no"
+ ],
+ "fields": [
+  {
+   "fieldname": "supplier_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "供应商名称",
+   "reqd": 1
+  },
+  {
+   "fieldname": "linked_user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "关联账号",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "default": "待审核",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "准入状态",
+   "options": "待审核\n已准入\n已拒绝"
+  },
+  {
+   "fieldname": "review_note",
+   "fieldtype": "Small Text",
+   "label": "审核备注"
+  },
+  {
+   "fieldname": "contact_section",
+   "fieldtype": "Section Break",
+   "label": "联系信息"
+  },
+  {
+   "fieldname": "contact_person",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "联系人"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "联系电话"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "邮箱",
+   "options": "Email"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "地址"
+  },
+  {
+   "fieldname": "qualification_section",
+   "fieldtype": "Section Break",
+   "label": "资质信息"
+  },
+  {
+   "fieldname": "business_scope",
+   "fieldtype": "Small Text",
+   "label": "经营范围"
+  },
+  {
+   "fieldname": "business_license_no",
+   "fieldtype": "Data",
+   "label": "统一社会信用代码"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-11-18 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Bidding",
+ "name": "Supplier",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "招标管理员",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "title_field": "supplier_name"
+}
