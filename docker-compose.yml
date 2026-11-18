@@ -43,7 +43,7 @@ services:
     container_name: frappe-bidding-db
     restart: unless-stopped
     environment:
-      - MARIADB_ROOT_PASSWORD=CHANGE_ME_DB_PASSWORD
+      - MARIADB_ROOT_PASSWORD=biddingdb2026
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
